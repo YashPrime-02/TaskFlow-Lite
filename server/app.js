@@ -6,8 +6,11 @@ const helmet = require("helmet");
 const morgan = require("morgan");
 
 const { sequelize, connectWithRetry } = require("./src/config/db");
+
+// 🔌 ROUTES
 const authRoutes = require("./src/routes/auth.routes");
 const taskRoutes = require("./src/routes/task.routes");
+
 const app = express();
 
 /* =========================
@@ -16,7 +19,7 @@ const app = express();
 app.use(helmet());
 
 /* =========================
-   📊 LOGGER (DEV + PROD)
+   📊 LOGGER
 ========================= */
 app.use(morgan("dev"));
 
@@ -26,18 +29,17 @@ app.use(morgan("dev"));
 app.use(express.json());
 
 /* =========================
-   🌐 CORS CONFIG (STRICT)
+   🌐 CORS CONFIG
 ========================= */
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",
   process.env.FRONTEND_URL,
-].filter(Boolean); // removes undefined
+].filter(Boolean);
 
 app.use(
   cors({
-    origin: function (origin, callback) {
-      // allow non-browser tools (Postman, curl)
+    origin: (origin, callback) => {
       if (!origin) return callback(null, true);
 
       if (allowedOrigins.includes(origin)) {
@@ -51,19 +53,31 @@ app.use(
 );
 
 /* =========================
-   ❤️ HEALTH CHECK (Docker)
+   ❤️ HEALTH CHECK
 ========================= */
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "OK" });
 });
 
 /* =========================
-   🏠 ROOT ROUTE
+   🏠 ROOT
 ========================= */
 app.get("/", (req, res) => res.send("API running 🚀"));
+
+/* =========================
+   🔗 API ROUTES (GROUPED)
+========================= */
 app.use("/api/auth", authRoutes);
 app.use("/api/tasks", taskRoutes);
 
+/* =========================
+   ❌ 404 HANDLER (IMPORTANT)
+========================= */
+app.use((req, res) => {
+  res.status(404).json({
+    message: `Route not found: ${req.originalUrl}`,
+  });
+});
 
 /* =========================
    ❌ GLOBAL ERROR HANDLER
@@ -91,8 +105,10 @@ const startServer = async () => {
     console.log("📦 Syncing database...");
     await sequelize.sync();
 
-    app.listen(process.env.PORT, "0.0.0.0", () => {
-      console.log(`🚀 Server running on port ${process.env.PORT}`);
+    const PORT = process.env.PORT || 5000;
+
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`🚀 Server running on port ${PORT}`);
     });
   } catch (err) {
     console.error("❌ Failed to start server:", err.message);

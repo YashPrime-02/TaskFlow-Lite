@@ -27,7 +27,7 @@ services:
     ports:
       - "5000:5000"
 
-    # ✅ Wait for DB readiness (not just container start)
+    # ✅ Wait for DB readiness
     depends_on:
       postgres:
         condition: service_healthy
@@ -35,7 +35,21 @@ services:
     env_file:
       - ./server/.env
 
-    # ✅ restart if crashes
+    stdin_open: true
+    tty: true
+
+  # 🔥 NEW: FRONTEND (NGINX)
+  client:
+    build: ./client
+    container_name: taskflow_client
+    restart: always
+    ports:
+      - "3000:80"
+
+    depends_on:
+      - server
+
+    # optional but useful for logs/debug
     stdin_open: true
     tty: true
 
