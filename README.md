@@ -97,15 +97,6 @@ taskflow/
 
 ---
 
-## 🔐 Environment Variables
-
-PORT=5000
-DB_HOST=postgres
-DB_PORT=5432
-DB_NAME=taskflow
-DB_USER=postgres
-DB_PASSWORD=postgres
-JWT_SECRET=your_secret_key
 
 ---
 
