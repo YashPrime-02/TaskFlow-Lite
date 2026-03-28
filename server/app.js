@@ -6,7 +6,8 @@ const helmet = require("helmet");
 const morgan = require("morgan");
 
 const { sequelize, connectWithRetry } = require("./src/config/db");
-
+const authRoutes = require("./src/routes/auth.routes");
+const taskRoutes = require("./src/routes/task.routes");
 const app = express();
 
 /* =========================
@@ -60,6 +61,9 @@ app.get("/health", (req, res) => {
    🏠 ROOT ROUTE
 ========================= */
 app.get("/", (req, res) => res.send("API running 🚀"));
+app.use("/api/auth", authRoutes);
+app.use("/api/tasks", taskRoutes);
+
 
 /* =========================
    ❌ GLOBAL ERROR HANDLER

@@ -1,4 +1,3 @@
-version: "3.8"
 
 services:
   postgres:
@@ -14,16 +13,31 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+    # ✅ Healthcheck (ensures DB is actually ready)
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   server:
     build: ./server
     container_name: taskflow_server
     restart: always
     ports:
       - "5000:5000"
+
+    # ✅ Wait for DB readiness (not just container start)
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+
     env_file:
       - ./server/.env
+
+    # ✅ restart if crashes
+    stdin_open: true
+    tty: true
 
 volumes:
   pgdata:
